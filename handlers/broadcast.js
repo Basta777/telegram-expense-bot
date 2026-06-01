@@ -1,24 +1,17 @@
 const db = require('../db'),
-    cfg = require('../config.json'),
+    cfg = require('../config'),
     wrapAsync = require('../utils').wrapAsync,
     UsersService = require('../services/users')
-
 const PATTERN_DEFAULT = /^\/broadcast (\/yes )?(.+)$/i
-
 const userService = new UsersService(db)
-
 function onBroadcast(bot) {
     return async function (msg, match) {
         if (!cfg.ADMINS.includes(msg.from.id)) return
-
         const dry = !match[1]
-
         let userIds, recipients
-
         try {
             userIds = (await userService.listActive()).map((u) => u._id)
             recipients = dry ? userIds.filter((uid) => uid === msg.from.id) : userIds
-
             await Promise.all(
                 recipients.map((uid) =>
                     bot.sendMessage(uid, match[2], {
@@ -27,7 +20,6 @@ function onBroadcast(bot) {
                     })
                 )
             )
-
             await bot.sendMessage(
                 msg.chat.id,
                 `✅ Sent to *${userIds.length}* users ${dry ? '(dry mode, use with `/yes`)' : ''}`,
@@ -39,12 +31,10 @@ function onBroadcast(bot) {
         }
     }
 }
-
 function register(bot, middleware) {
     console.log('✅ Registering handlers for /broadcast ...')
     bot.onText(PATTERN_DEFAULT, middleware(wrapAsync(onBroadcast(bot))))
 }
-
 module.exports = {
     register,
 }
