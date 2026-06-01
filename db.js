@@ -1,6 +1,6 @@
 const MongoClient = require('mongodb').MongoClient,
-    config = require('./config')
-const client = new MongoClient(config.DB_URL, { useUnifiedTopology: true })
+    config = require('./config.json')
+const client = new MongoClient(config.DB_URL)
 const collections = {}
 async function connect() {
     try {
